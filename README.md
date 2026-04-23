@@ -88,7 +88,32 @@ jobs:
 
 ## Writing assertions
 
-See [mcp-assert documentation](https://github.com/blackwell-systems/mcp-assert) for the YAML assertion format and examples.
+Each assertion is a YAML file that calls one MCP tool and checks the result:
+
+```yaml
+# evals/read_file.yaml
+name: read_file returns file contents
+server:
+  command: npx
+  args: ["@modelcontextprotocol/server-filesystem", "{{fixture}}"]
+assert:
+  tool: read_file
+  args:
+    path: "{{fixture}}/hello.txt"
+  expect:
+    not_error: true
+    contains: ["Hello, world!"]
+timeout: 15s
+```
+
+- `server` — how to start your MCP server (binary + args)
+- `assert.tool` — which MCP tool to call
+- `assert.args` — arguments passed to the tool
+- `assert.expect` — deterministic checks on the response (`contains`, `not_error`, `equals`, `is_error`, `json_path`, `min_results`, etc.)
+- `{{fixture}}` — replaced with the `fixture` input path at runtime
+- `setup` — optional list of tool calls to run before the assertion (for stateful tests)
+
+See [mcp-assert documentation](https://github.com/blackwell-systems/mcp-assert) for the full assertion format reference and example suites.
 
 ## License
 
