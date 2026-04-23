@@ -1,0 +1,111 @@
+name: 'mcp-assert'
+description: 'Deterministic correctness testing for MCP servers. Assert your tools return the right results.'
+author: 'Blackwell Systems'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  suite:
+    description: 'Directory containing assertion YAML files'
+    required: true
+  server:
+    description: 'Override server command (e.g. "agent-lsp go:gopls")'
+    required: false
+  fixture:
+    description: 'Fixture directory (substituted for {{fixture}} in assertions)'
+    required: false
+  threshold:
+    description: 'Minimum pass percentage (default: 100)'
+    required: false
+    default: '100'
+  timeout:
+    description: 'Per-assertion timeout (default: 30s)'
+    required: false
+    default: '30s'
+  version:
+    description: 'mcp-assert version to install (default: latest)'
+    required: false
+    default: 'latest'
+  baseline:
+    description: 'Baseline JSON file for regression detection'
+    required: false
+  fail-on-regression:
+    description: 'Exit 1 if a previously-passing assertion regresses'
+    required: false
+    default: 'false'
+
+outputs:
+  passed:
+    description: 'Number of assertions that passed'
+  failed:
+    description: 'Number of assertions that failed'
+  total:
+    description: 'Total number of assertions'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install mcp-assert
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        if [ "$VERSION" = "latest" ]; then
+          VERSION=$(curl -fsSL https://api.github.com/repos/blackwell-systems/mcp-assert/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+        fi
+        VERSION_NUM="${VERSION#v}"
+
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+        case "$ARCH" in
+          x86_64) ARCH="amd64" ;;
+          aarch64|arm64) ARCH="arm64" ;;
+        esac
+
+        URL="https://github.com/blackwell-systems/mcp-assert/releases/download/${VERSION}/mcp-assert_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
+        echo "Downloading mcp-assert ${VERSION} from ${URL}"
+        curl -fsSL "$URL" -o /tmp/mcp-assert.tar.gz
+        tar -xzf /tmp/mcp-assert.tar.gz -C /usr/local/bin mcp-assert
+        chmod +x /usr/local/bin/mcp-assert
+        mcp-assert version
+
+    - name: Run assertions
+      shell: bash
+      run: |
+        ARGS="--suite ${{ inputs.suite }}"
+        ARGS="$ARGS --threshold ${{ inputs.threshold }}"
+        ARGS="$ARGS --timeout ${{ inputs.timeout }}"
+        ARGS="$ARGS --junit ${{ runner.temp }}/mcp-assert-results.xml"
+        ARGS="$ARGS --badge ${{ runner.temp }}/mcp-assert-badge.json"
+
+        if [ -n "${{ inputs.server }}" ]; then
+          ARGS="$ARGS --server \"${{ inputs.server }}\""
+        fi
+        if [ -n "${{ inputs.fixture }}" ]; then
+          ARGS="$ARGS --fixture ${{ inputs.fixture }}"
+        fi
+        if [ -n "${{ inputs.baseline }}" ]; then
+          ARGS="$ARGS --baseline ${{ inputs.baseline }}"
+        fi
+        if [ "${{ inputs.fail-on-regression }}" = "true" ]; then
+          ARGS="$ARGS --fail-on-regression"
+        fi
+
+        eval mcp-assert ci $ARGS
+
+    - name: Upload JUnit results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mcp-assert-results
+        path: ${{ runner.temp }}/mcp-assert-results.xml
+        if-no-files-found: ignore
+
+    - name: Upload badge
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mcp-assert-badge
+        path: ${{ runner.temp }}/mcp-assert-badge.json
+        if-no-files-found: ignore
