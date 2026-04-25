@@ -43,6 +43,8 @@ outputs:
     description: 'Number of assertions that failed'
   total:
     description: 'Total number of assertions'
+  badge_markdown:
+    description: 'Ready-to-paste badge markdown (only set when all assertions pass)'
 
 runs:
   using: 'composite'
@@ -109,3 +111,16 @@ runs:
         name: mcp-assert-badge
         path: ${{ runner.temp }}/mcp-assert-badge.json
         if-no-files-found: ignore
+
+    - name: Set badge output
+      if: always()
+      shell: bash
+      run: |
+        BADGE_FILE="${{ runner.temp }}/mcp-assert-badge.json"
+        if [ -f "$BADGE_FILE" ]; then
+          MESSAGE=$(jq -r '.message' "$BADGE_FILE")
+          # Set badge_markdown output only when all passed (message contains no failures)
+          if echo "$MESSAGE" | grep -q "passed" && ! echo "$MESSAGE" | grep -q "failed"; then
+            echo "badge_markdown=[![mcp-assert: passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg)](https://github.com/blackwell-systems/mcp-assert)" >> "$GITHUB_OUTPUT"
+          fi
+        fi
