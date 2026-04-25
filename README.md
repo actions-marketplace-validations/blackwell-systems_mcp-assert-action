@@ -1,5 +1,6 @@
 # mcp-assert GitHub Action
 
+[![Blackwell Systems](https://raw.githubusercontent.com/blackwell-systems/blackwell-docs-theme/main/badge-trademark.svg)](https://github.com/blackwell-systems)
 <a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg?v=3" alt="mcp-assert: passing" height="20"></a>
 
 Deterministic correctness testing for MCP servers in CI. One line to add assertion testing to any MCP server repo.
