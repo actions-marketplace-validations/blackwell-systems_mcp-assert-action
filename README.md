@@ -1,5 +1,7 @@
 # mcp-assert GitHub Action
 
+<a href="https://github.com/blackwell-systems/mcp-assert"><img src="https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg?v=3" alt="mcp-assert: passing" height="20"></a>
+
 Deterministic correctness testing for MCP servers in CI. One line to add assertion testing to any MCP server repo.
 
 ## Usage
@@ -35,7 +37,7 @@ Deterministic correctness testing for MCP servers in CI. One line to add asserti
 
 ## Examples
 
-### Basic — test a filesystem server
+### Basic: test a filesystem server
 
 ```yaml
 name: Test MCP Server
@@ -85,6 +87,24 @@ jobs:
 4. Uploads shields.io badge JSON as an artifact
 5. Writes GitHub Step Summary automatically
 6. Fails the step if pass rate is below threshold
+
+## Add the badge
+
+Once your assertions pass, add the badge to your server's README:
+
+```markdown
+[![mcp-assert: passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg)](https://github.com/blackwell-systems/mcp-assert)
+```
+
+Three variants are available:
+
+| Preview | Variant | Markdown |
+|---------|---------|----------|
+| ![passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg) | Passing | `[![mcp-assert: passing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-passing.svg)](https://github.com/blackwell-systems/mcp-assert)` |
+| ![score](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-score.svg) | Score | Download SVG, edit the count, host in your repo |
+| ![failing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-failing.svg) | Failing | `[![mcp-assert: failing](https://raw.githubusercontent.com/blackwell-systems/mcp-assert/main/assets/badge-failing.svg)](https://github.com/blackwell-systems/mcp-assert)` |
+
+For dynamic badges that reflect your CI pass rate, see the [Badge guide](https://blackwell-systems.github.io/mcp-assert/badge/).
 
 ## Writing assertions
 
